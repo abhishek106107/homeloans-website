@@ -14,19 +14,55 @@ const LeadFormPage = () => {
     phone: '',
     loanAmount: '',
     propertyLocation: 'Hyderabad',
+    loanCategory: 'Home Loan',
     loanType: 'Home Purchase',
+    propertyType: 'Residential',
     annualIncome: '',
     employmentType: 'Salaried',
     creditScore: 'Not Sure',
+    existingEMI: '0',
+    purposeOfLoan: 'Property Purchase',
     message: '',
   });
 
+  const loanTypesByCategory = {
+    'Home Loan': [
+      { value: 'Home Purchase', label: 'Home Purchase' },
+      { value: 'Home Construction', label: 'Home Construction' },
+      { value: 'Home Improvement', label: 'Home Improvement' },
+      { value: 'Balance Transfer', label: 'Balance Transfer' },
+    ],
+    'LAP': [
+      { value: 'LAP - Residential', label: 'LAP - Residential Property' },
+      { value: 'LAP - Commercial', label: 'LAP - Commercial Property' },
+      { value: 'LAP - Any Purpose', label: 'LAP - Any Purpose' },
+    ],
+    'Mortgage Loan': [
+      { value: 'Property Mortgage', label: 'Property Mortgage' },
+      { value: 'Mortgage Refinance', label: 'Mortgage Refinance' },
+    ],
+  };
+
+  const purposeOptions = {
+    'Home Loan': ['Property Purchase', 'Construction', 'Renovation', 'Debt Consolidation'],
+    'LAP': ['Business Needs', 'Education', 'Medical', 'Debt Consolidation', 'Other'],
+    'Mortgage Loan': ['Business Needs', 'Debt Consolidation', 'Other'],
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    let updatedData = {
+      ...formData,
       [name]: value,
-    }));
+    };
+
+    // Reset dependent fields when category changes
+    if (name === 'loanCategory') {
+      updatedData.loanType = loanTypesByCategory[value]?.[0]?.value || '';
+      updatedData.purposeOfLoan = purposeOptions[value]?.[0] || '';
+    }
+
+    setFormData(updatedData);
     setError('');
   };
 
@@ -58,7 +94,7 @@ const LeadFormPage = () => {
     <div className="form-page">
       <div className="container">
         <div className="form-container">
-          <h1>Get Your Home Loan Quote</h1>
+          <h1>Get Your Loan Quote</h1>
           <p className="form-subtitle">Fill in your details and we'll connect you with the best lenders</p>
 
           {error && <div className="error-message">{error}</div>}
@@ -122,6 +158,37 @@ const LeadFormPage = () => {
               <h2>Loan Requirements</h2>
               <div className="form-row">
                 <div className="form-group">
+                  <label>Loan Category *</label>
+                  <select
+                    name="loanCategory"
+                    value={formData.loanCategory}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="Home Loan">Home Loan</option>
+                    <option value="LAP">LAP (Loan Against Property)</option>
+                    <option value="Mortgage Loan">Mortgage Loan</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Loan Type *</label>
+                  <select
+                    name="loanType"
+                    value={formData.loanType}
+                    onChange={handleChange}
+                    required
+                  >
+                    {loanTypesByCategory[formData.loanCategory]?.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
                   <label>Loan Amount Required (₹) *</label>
                   <input
                     type="number"
@@ -147,22 +214,36 @@ const LeadFormPage = () => {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Loan Type *</label>
-                  <select
-                    name="loanType"
-                    value={formData.loanType}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="Home Purchase">Home Purchase</option>
-                    <option value="Home Construction">Home Construction</option>
-                    <option value="Home Improvement">Home Improvement</option>
-                    <option value="Balance Transfer">Balance Transfer</option>
-                  </select>
+              {(formData.loanCategory === 'Home Loan' || formData.loanCategory === 'LAP') && (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Property Type *</label>
+                    <select
+                      name="propertyType"
+                      value={formData.propertyType}
+                      onChange={handleChange}
+                    >
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Purpose of Loan *</label>
+                    <select
+                      name="purposeOfLoan"
+                      value={formData.purposeOfLoan}
+                      onChange={handleChange}
+                      required
+                    >
+                      {purposeOptions[formData.loanCategory]?.map((purpose) => (
+                        <option key={purpose} value={purpose}>
+                          {purpose}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="form-section">
@@ -208,6 +289,17 @@ const LeadFormPage = () => {
                     <option value="Fair (650-699)">Fair (650-699)</option>
                     <option value="Poor (<650)">Poor (Below 650)</option>
                   </select>
+                </div>
+                <div className="form-group">
+                  <label>Existing Monthly EMI (₹)</label>
+                  <input
+                    type="number"
+                    name="existingEMI"
+                    value={formData.existingEMI}
+                    onChange={handleChange}
+                    placeholder="0"
+                    min="0"
+                  />
                 </div>
               </div>
             </div>
